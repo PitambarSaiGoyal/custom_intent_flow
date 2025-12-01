@@ -1,0 +1,24 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "strict": false
+  },
+  "include": [
+    "store.ts",
+    "viewStateSlice.ts",
+    "websiteEventWorker.ts"
+  ]
+}
+
+
