@@ -23,7 +23,7 @@ export type InjectionComponentProps = {
  */
 const FALLBACK_BOTTOM_CARD: InjectionComponentContent = {
   content: "Discover personalized offers tailored to your goals.",
-  imageUrl: "https://amturing.acm.org/images/lg_aw/1013846.jpg",
+  imageUrl: "",
   link: "/",
 }
 
@@ -80,7 +80,7 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
     }
   }, [shouldDisplayCenteredModal])
 
-  const showBottomCard = shouldDisplayBottomCard && !bottomCardDismissed
+  const showBottomCard = !bottomCardDismissed;//shouldDisplayBottomCard && !bottomCardDismissed
   const showCentralModal = shouldDisplayCenteredModal && !centeredModalDismissed
 
   useEffect(() => {

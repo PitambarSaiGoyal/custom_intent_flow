@@ -1,4 +1,5 @@
 import React from "react"
+import "./globals.css"  // Add this import
 
 export const metadata = {
   title: "Intentflow Demo",
@@ -14,5 +15,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   )
 }
-
-
