@@ -89,7 +89,7 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
               "flow_components": {
                 "bottomCard": {
                   "link": "/smartassist/insights",
-                  "type": "floater",
+                  "type": "bottomCard",
                   "message": "You might want to check out our SavingsZero balance accounts with instant benefits.",
                   "imageUrl": "https://cdn.example.com/images/telemetry-modal.png"
                 }
@@ -225,9 +225,16 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
           {pollingError}
         </div>
       ) : null}
-      {showBottomCard ? (
+      {!showBottomCard ? (
         <BottomCard
           contentProps={resolvedBottomCardContent}
+          onClose={() => setBottomCardDismissed(true)}
+        />
+      ) : null}
+      {showBottomCard ? (
+        <BottomCardInnerHTML
+          innerContent={'<b>TESTING!!!!</b>'}
+          link={''}
           onClose={() => setBottomCardDismissed(true)}
         />
       ) : null}
@@ -271,6 +278,41 @@ function BottomCard({
           <p className="text-xs text-slate-600">{content}</p>
           <span className="mt-2 inline-flex text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
             Discover tailored offers →
+          </span>
+        </div>
+      </Link>
+    </div>
+  )
+}
+
+function BottomCardInnerHTML({
+  innerContent,
+  link,
+  onClose,
+}: {
+  innerContent: string
+  link: string
+  onClose: () => void
+}) {
+  return (
+    <div className="fixed bottom-6 left-6 z-50 shadow-lg rounded-xl bg-white/95 backdrop-blur-md border border-gray-200 max-w-sm">
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-2 right-2 rounded-full bg-white/90 p-1 text-xs text-slate-500 shadow hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        aria-label="Close bottom card"
+      >
+        ×
+      </button>
+      <Link href={link} className="flex items-center gap-3 p-4" target="_blank" rel="noopener noreferrer">
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-slate-900">Hi There!</p><br/>
+          <div 
+              className="text-xs text-slate-600"
+              dangerouslySetInnerHTML={{ __html: innerContent }}
+            /><br/>
+          <span className="mt-2 inline-flex text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
+            Learn More →
           </span>
         </div>
       </Link>
