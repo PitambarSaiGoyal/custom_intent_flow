@@ -23,7 +23,7 @@ class JourneyAnalyzer:
         ifConfig = {
             "title": "Savings Account Explorer",
             "flow_steps": [
-                {"id": "explored_savings", "event": "click", "element": "SavingsZero balance accounts", "set_flag": "exploredSavings"},
+                {"id": "explored_savings", "event": "click", "element": "SECTION | SavingsZero balance accounts | /", "set_flag": "exploredSavings"},
                 {"id": "viewed_calculator", "event": "Text Hover", "element": "DIV | 6.5% p.a. | /", "set_flag": "viewedCalculator"}
             ],
             "pattern_id": "ec4fafbd-75ae-48b4-a564-8dcabbec0399",
@@ -36,7 +36,7 @@ class JourneyAnalyzer:
                 }
             },
             "flow_uiMappings": [
-                {"flags": ["exploredSavings", "viewedCalculator"], "componentId": "bottomCard"}
+                {"flags": ["viewedCalculator"], "componentId": "bottomCard"}
             ],
             "similarity_score": 0.074775256,
             "bottomCardMessage": "Explore our SavingsZero balance accounts for instant benefits and easy savings!",
