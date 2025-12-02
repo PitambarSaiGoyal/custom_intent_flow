@@ -27,6 +27,8 @@ const FALLBACK_BOTTOM_CARD: InjectionComponentContent = {
   link: "/",
 }
 
+const TESTING = true;
+
 const FALLBACK_CENTERED_MODAL: InjectionComponentContent = {
   content: "Smart banking, curated insights, unified journeys.",
   imageUrl: "https://amturing.acm.org/images/lg_aw/1013846.jpg",
@@ -86,7 +88,48 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
 
     const fetchLatestConfig = async () => {
       try {
-        const response = await fetch("/api/view-state/poll", {
+        let response;
+        if(TESTING){
+          response = {
+              "title": "Savings Account Explorer",
+              "flow_steps": [
+                {
+                  "id": "explored_savings",
+                  "event": "click",
+                  "element": "SavingsZero balance accounts",
+                  "set_flag": "exploredSavings"
+                },
+                {
+                  "id": "viewed_calculator",
+                  "event": "Text Hover",
+                  "element": "DIV | 6.5% p.a. | /",
+                  "set_flag": "viewedCalculator"
+                }
+              ],
+              "pattern_id": "ec4fafbd-75ae-48b4-a564-8dcabbec0399",
+              "flow_components": {
+                "bottomCard": {
+                  "link": "/smartassist/insights",
+                  "type": "floater",
+                  "message": "You might want to check out our SavingsZero balance accounts with instant benefits.",
+                  "imageUrl": "https://cdn.example.com/images/telemetry-modal.png"
+                }
+              },
+              "flow_uiMappings": [
+                {
+                  "flags": [
+                    "exploredSavings",
+                    "viewedCalculator"
+                  ],
+                  "componentId": "bottomCard"
+                }
+              ],
+              "similarity_score": 0.074775256,
+              "bottomCardMessage": "Explore our SavingsZero balance accounts for instant benefits and easy savings!",
+              "centredModalMessage": "Unlock the potential of your savings with our SavingsZero balance accounts. Enjoy instant benefits, no minimum balance requirements, and a competitive interest rate of 6.5% p.a. Start maximizing your savings today and watch your money grow effortlessly!"
+            }
+        }
+        else response = await fetch("/api/view-state/poll", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -100,7 +143,7 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
           )
         }
 
-        const data: FullIFConfig = await response.json()
+        const data: FullIFConfig = TESTING ? response : await response.json()
         console.log("[InjectionComponent] full IF config", data)
         dispatch(setFullIFConfig(data))
 
@@ -155,13 +198,18 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
   useEffect(() => {
 
     const pollLatestEvent = async () => {
-      const response = await fetch("/api/view-state/latest-event", {
+      let response, randomNumber;
+      if(TESTING){
+        randomNumber = Math.floor(Math.random() * 100);
+        response = randomNumber % 4 === 0 ? {event: 'Text Hover', element: 'DIV | 6.5% p.a. | /'} : {event: 'Click', element: 'DIV | 6.5% p.a. | /'};
+      }
+      else response = await fetch("/api/view-state/latest-event", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       })
-      const eventResp: { urlPath: string; eventName: string } = await response.json()
+      const eventResp: { urlPath: string; eventName: string } = TESTING ? response:await response.json()
 
       const flagsToSet: string[] = []
       const steps = fullIFConfig?.flowSteps ?? []
