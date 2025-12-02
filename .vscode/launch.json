@@ -19,6 +19,24 @@
       ]
     },
     {
+      // Run and debug the FastAPI app in api.py with uvicorn
+      "name": "Python: Debug FastAPI (api.py)",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "api:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000",
+        "--reload"
+      ],
+      "console": "integratedTerminal",
+      "jinja": true,
+      "justMyCode": true
+    },
+    {
       // Attach VS Code to the browser to debug client components like InjectionComponent.tsx
       "name": "Next.js: Debug client (Chrome)",
       "type": "pwa-chrome",
