@@ -31,7 +31,7 @@ const TESTING = true;
 
 const FALLBACK_CENTERED_MODAL: InjectionComponentContent = {
   content: "Smart banking, curated insights, unified journeys.",
-  imageUrl: "https://amturing.acm.org/images/lg_aw/1013846.jpg",
+  imageUrl: "",
   link: "/",
 }
 
@@ -46,10 +46,6 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
   const [centeredModalDismissed, setCenteredModalDismissed] = useState(false)
   const fullIFConfig = viewState.fullIFConfig
 
-  const effectiveConfig = viewState.injectionConfig ?? {}
-  const bottomCardKeys = effectiveConfig.bottomCard ?? []
-  const centeredModalKeys = effectiveConfig.centeredModal ?? []
-
   const resolvedBottomCardContent =
     fullIFConfig?.componentProps?.bottomCard ??
     bottomCardContent ??
@@ -61,27 +57,10 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
     centeredModalContent ??
     viewState.componentProps.centeredModal ??
     FALLBACK_CENTERED_MODAL
-
-  const shouldDisplayBottomCard =
-    bottomCardKeys.length > 0
-      ? bottomCardKeys.every((key) => Boolean((viewState as Record<string, unknown>)[key]))
-      : viewState.viewedHome && viewState.clickedLoans && viewState.exploredSavings
-
-  const shouldDisplayCenteredModal =
-    centeredModalKeys.length > 0
-      ? centeredModalKeys.every((key) => Boolean((viewState as Record<string, unknown>)[key]))
-      : viewState.checkedCreditCards && viewState.openedInvestments && viewState.viewedCalculator
-
   
 
-  useEffect(() => {
-    if (!shouldDisplayCenteredModal) {
-      setCenteredModalDismissed(false)
-    }
-  }, [shouldDisplayCenteredModal])
-
   const showBottomCard = !bottomCardDismissed;//shouldDisplayBottomCard && !bottomCardDismissed
-  const showCentralModal = shouldDisplayCenteredModal && !centeredModalDismissed
+  const showCentralModal = !centeredModalDismissed;//shouldDisplayCenteredModal && !centeredModalDismissed
 
   useEffect(() => {
     console.log("[InjectionComponent] fetching enriched config on mount")
@@ -237,13 +216,7 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
     }
   }, [dispatch, fullIFConfig])
 
-  console.log("[InjectionComponent] rendering component", {
-    showBottomCard,
-    showCentralModal,
-    config: effectiveConfig,
-    bottomCardContent: resolvedBottomCardContent,
-    centeredModalContent: resolvedCenteredModalContent,
-  })
+  
 
   return (
     <>
