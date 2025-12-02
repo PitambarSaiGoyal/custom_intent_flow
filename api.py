@@ -66,49 +66,48 @@ class JourneyAnalyzer:
         return state
 
     def updateJourney(self, sessionId, state):
-      events = getLatestEvents(sessionId, count=self.N)
-      ifConfig = getLatestIfConfig(sessionId)
+        events = self._get_latest_events(sessionId, count=self.N)
+        ifConfig = self._get_latest_if_config(sessionId)
 
-      current_state = state.copy()
+        current_state = state.copy()
 
-      for i, event in enumerate(events):
-        event_element_raw = event['element']
-        eventElementVec = encodeEventVec(event_element_raw.split(' | ')[1])
+        for _, event in enumerate(events):
+            event_element_raw = event['element']
+            eventElementVec = self._encode_event_vec(event_element_raw.split(' | ')[1])
 
-        #Get max similarity event-flag map
-        max_sim = 0
-        matchedElement = None
-        
-        for fs in ifConfig['flow_steps']:
-          ifConfig_element_raw = fs['element']
-          ifConfigElementVec = encodeEventVec(ifConfig_element_raw.split(' | ')[1])
-          sim = getSim(eventElementVec, ifConfigElementVec)
-          if sim > max_sim:
-            max_sim = sim
-            matchedElement = fs
-        
-        #Discard if below max similarity threshold
-        if max_sim < self.SIM_THRESHOLD:
-          matchedElement = None
-        
-        #Update state
-        if matchedElement:
-          old_state = current_state.copy()
-          current_state = updateState(current_state, matchedElement)
-          
-      for fum in ifConfig['flow_uiMappings']:
-        flags_needed = set(fum['flags'])
-        if flags_needed.issubset(current_state):
-          component_id = fum['componentId']
-          return {
-              'updatedState': current_state,
-              'components': ifConfig['flow_components'][ component_id ]
-          }
-      
-      return {
-          'updatedState': current_state,
-          'components': None 
-      }
+            # Get max similarity event-flag map
+            max_sim = 0
+            matchedElement = None
+
+            for fs in ifConfig['flow_steps']:
+                ifConfig_element_raw = fs['element']
+                ifConfigElementVec = self._encode_event_vec(ifConfig_element_raw.split(' | ')[1])
+                sim = self._get_similarity(eventElementVec, ifConfigElementVec)
+                if sim > max_sim:
+                    max_sim = sim
+                    matchedElement = fs
+
+            # Discard if below max similarity threshold
+            if max_sim < self.SIM_THRESHOLD:
+                matchedElement = None
+
+            # Update state
+            if matchedElement:
+                current_state = self._update_state(current_state, matchedElement)
+
+        for fum in ifConfig['flow_uiMappings']:
+            flags_needed = set(fum['flags'])
+            if flags_needed.issubset(current_state):
+                component_id = fum['componentId']
+                return {
+                    'updatedState': current_state,
+                    'components': ifConfig['flow_components'][component_id]
+                }
+
+        return {
+            'updatedState': current_state,
+            'components': None
+        }
 
 
 analyzer = JourneyAnalyzer(n=5, sim_threshold=0.6)
