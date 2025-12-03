@@ -42,8 +42,10 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
   const viewState = useSelector((state: ViewStateRootState) => state.viewState)
   const dispatch = useDispatch<ViewStateDispatch>()
   const [pollingError, setPollingError] = useState<string | null>(null)
-  const [bottomCardDismissed, setBottomCardDismissed] = useState(false)
-  const [centeredModalDismissed, setCenteredModalDismissed] = useState(false)
+  const [bottomCardDismissed, setBottomCardDismissed] = useState(true)
+  const [centeredModalDismissed, setCenteredModalDismissed] = useState(true)
+  const [componentLink, setComponentLink] = useState('')
+  const [innerContent, setInnerContent] = useState('')
   const fullIFConfig = viewState.fullIFConfig
 
   const resolvedBottomCardContent =
@@ -61,6 +63,15 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
 
   const showBottomCard = !bottomCardDismissed;//shouldDisplayBottomCard && !bottomCardDismissed
   const showCentralModal = !centeredModalDismissed;//shouldDisplayCenteredModal && !centeredModalDismissed
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const ifState = localStorage.getItem('ifState')
+      if (ifState === null) {
+        localStorage.setItem('ifState', JSON.stringify([]))
+      }
+    }
+  }, [])
 
   useEffect(() => {
     console.log("[InjectionComponent] fetching enriched config on mount")
@@ -216,6 +227,64 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
     }
   }, [dispatch, fullIFConfig])
 
+  useEffect(() => {
+    const updateState = async () => {
+
+      // Get sessionId from localStorage
+      let sessionId = "sample_session"
+      const umamiSessionData = localStorage.getItem('umamiSessionData')
+      if (umamiSessionData !== null) {
+        const parsed = typeof umamiSessionData === 'string' ? JSON.parse(umamiSessionData) : umamiSessionData
+        if (parsed && typeof parsed === 'object' && 'sessionId' in parsed) {
+          sessionId = parsed.sessionId as string
+        }
+      }
+
+      // Get state from localStorage
+      const ifStateStr = localStorage.getItem('ifState')
+      let state: string[] = []
+      if (ifStateStr !== null) {
+        state = JSON.parse(ifStateStr)
+      }
+
+      // Make POST request
+      const response = await fetch("https://vigilant-bassoon-x9qq6pvv5rqhp56w-8000.app.github.dev/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId,
+          state,
+        }),
+      })
+
+      const responseData = await response.json()
+      if (responseData.updatedState) {
+        localStorage.setItem('ifState', JSON.stringify(responseData.updatedState))
+      }
+      if(responseData.components){
+        setComponentLink(responseData.components.link)
+        setInnerContent(responseData.components.innerContent)
+        if(responseData.components.type == 'bottomCard')
+          setBottomCardDismissed(false)
+        else if(responseData.components.type == 'centeredModal')
+          setCenteredModalDismissed(false)
+      }
+      
+    }
+
+    const intervalId = setInterval(() => {
+      void updateState()
+    }, 5000)
+
+    void updateState()
+
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, [])
+
   
 
   return (
@@ -233,8 +302,8 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
       ) : null}
       {showBottomCard ? (
         <BottomCardInnerHTML
-          innerContent={'<b>TESTING!!!!</b>'}
-          link={''}
+          innerContent={ innerContent ? innerContent : '<b>TESTING!!!!</b>'}
+          link={componentLink ? componentLink : '/'}
           onClose={() => setBottomCardDismissed(true)}
         />
       ) : null}
