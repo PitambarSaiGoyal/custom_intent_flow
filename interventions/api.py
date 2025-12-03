@@ -31,8 +31,8 @@ class JourneyAnalyzer:
             "flow_components": {
                 "bottomCard": {
                     "link": "/smartassist/insights",
-                    "type": "floater",
-                    "message": "You might want to check out our SavingsZero balance accounts with instant benefits.",
+                    "type": "bottomCard",
+                    "innerContent": "You might want to check out our SavingsZero balance accounts with instant benefits.",
                     "imageUrl": "https://cdn.example.com/images/telemetry-modal.png"
                 }
             },
