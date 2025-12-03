@@ -268,7 +268,7 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
         setInnerContent(responseData.components.innerContent)
         if(responseData.components.type == 'bottomCard')
           setBottomCardDismissed(false)
-        else if(responseData.components.type == 'centeredModal')
+        else if(responseData.components.type == 'centredModal')
           setCenteredModalDismissed(false)
       }
       
@@ -302,9 +302,10 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
         />
       ) : null}
       {showCentralModal ? (
-        <CenteredModal
-          contentProps={resolvedCenteredModalContent}
-          onClose={() => setCenteredModalDismissed(true)}
+        <CenteredModalInnerHTML
+          innerContent={ innerContent ? innerContent : '<b>TESTING!!!!</b>'}
+          link={componentLink ? componentLink : '/'}
+          onClose={() => setBottomCardDismissed(true)}
         />
       ) : null}
     </>
@@ -312,41 +313,6 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
 }
 
 export default InjectionComponent
-
-function BottomCard({
-  contentProps,
-  onClose,
-}: {
-  contentProps: InjectionComponentContent
-  onClose: () => void
-}) {
-  if(!contentProps) {return (<></>)}
-  const { imageUrl, link, content } = contentProps;
-  return (
-    <div className="fixed bottom-6 left-6 z-50 shadow-lg rounded-xl bg-white/95 backdrop-blur-md border border-gray-200 max-w-sm">
-      <button
-        type="button"
-        onClick={onClose}
-        className="absolute top-2 right-2 rounded-full bg-white/90 p-1 text-xs text-slate-500 shadow hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        aria-label="Close bottom card"
-      >
-        ×
-      </button>
-      <Link href={link} className="flex items-center gap-3 p-4" target="_blank" rel="noopener noreferrer">
-        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-slate-100 shadow-inner">
-          <Image src={imageUrl} alt={content} fill sizes="48px" className="object-cover" />
-        </div>
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-slate-900">Hi There!</p>
-          <p className="text-xs text-slate-600">{content}</p>
-          <span className="mt-2 inline-flex text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
-            Discover tailored offers →
-          </span>
-        </div>
-      </Link>
-    </div>
-  )
-}
 
 function BottomCardInnerHTML({
   innerContent,
@@ -424,6 +390,42 @@ function CenteredModal({
           rel="noopener noreferrer"
         >
           Explore Smart Banking
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function CenteredModalInnerHTML({
+  innerContent,
+  link,
+  onClose,
+}: {
+  innerContent: string
+  link: string
+  onClose: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
+      <div className="pointer-events-auto shadow-2xl rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200 max-w-md w-full mx-4 p-8 text-center space-y-4 relative">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-3 right-3 rounded-full bg-white/90 px-2 text-sm text-slate-500 shadow hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          aria-label="Close modal"
+        >
+          ×
+        </button>
+        <Link
+          href={link}
+          className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <div 
+            className="text-xs text-slate-600"
+            dangerouslySetInnerHTML={{ __html: innerContent }}
+          /><br/>
         </Link>
       </div>
     </div>

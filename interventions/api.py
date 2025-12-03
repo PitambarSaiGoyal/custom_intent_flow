@@ -6,6 +6,8 @@ from typing import List, Set
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+import random
+
 class JourneyAnalyzer:
     def __init__(self, n=5, sim_threshold=0.6):
         self.N = n
@@ -21,28 +23,59 @@ class JourneyAnalyzer:
         return events[:count]
 
     def _get_latest_if_config(self, sessionId):
-        ifConfig = {
-            "title": "Savings Account Explorer",
-            "flow_steps": [
-                {"id": "explored_savings", "event": "click", "element": "SECTION | SavingsZero balance accounts | /", "set_flag": "exploredSavings"},
-                {"id": "viewed_calculator", "event": "Text Hover", "element": "DIV | 6.5% p.a. | /", "set_flag": "viewedCalculator"}
-            ],
-            "pattern_id": "ec4fafbd-75ae-48b4-a564-8dcabbec0399",
-            "flow_components": {
-                "bottomCard": {
-                    "link": "/smartassist/insights",
-                    "type": "bottomCard",
-                    "innerContent": "You might want to check out our SavingsZero balance accounts with instant benefits.",
-                    "imageUrl": "https://cdn.example.com/images/telemetry-modal.png"
-                }
-            },
-            "flow_uiMappings": [
-                {"flags": ["viewedCalculator"], "componentId": "bottomCard"}
-            ],
-            "similarity_score": 0.074775256,
-            "bottomCardMessage": "Explore our SavingsZero balance accounts for instant benefits and easy savings!",
-            "centredModalMessage": "Unlock the potential of your savings with our SavingsZero balance accounts. Enjoy instant benefits, no minimum balance requirements, and a competitive interest rate of 6.5% p.a. Start maximizing your savings today and watch your money grow effortlessly!"
-        }
+        randno = random.randint(0, 8)
+        if randno%4 == 0:
+            ifConfig = {
+                "title": "Savings Account Explorer",
+                "flow_steps": [
+                    {"id": "explored_savings", "event": "click", "element": "SECTION | SavingsZero balance accounts | /", "set_flag": "exploredSavings"},
+                    {"id": "viewed_calculator", "event": "Text Hover", "element": "DIV | 6.5% p.a. | /", "set_flag": "viewedCalculator"}
+                ],
+                "pattern_id": "ec4fafbd-75ae-48b4-a564-8dcabbec0399",
+                "flow_components": {
+                    "bottomCard": {
+                        "link": "/smartassist/insights",
+                        "type": "bottomCard",
+                        "innerContent": "You might want to check out our <b>SavingsZero balance accounts</b> with instant benefits.",
+                        "imageUrl": "https://cdn.example.com/images/telemetry-modal.png"
+                    }
+                },
+                "flow_uiMappings": [
+                    {"flags": ["viewedCalculator"], "componentId": "bottomCard"}
+                ],
+                "similarity_score": 0.074775256,
+                "bottomCardMessage": "Explore our SavingsZero balance accounts for instant benefits and easy savings!",
+                "centredModalMessage": "Unlock the potential of your savings with our SavingsZero balance accounts. Enjoy instant benefits, no minimum balance requirements, and a competitive interest rate of 6.5% p.a. Start maximizing your savings today and watch your money grow effortlessly!"
+            }
+        else:
+            ifConfig = {
+                "title": "Savings Account Explorer",
+                "flow_steps": [
+                    {"id": "viewed_calculator", "event": "click", "element": "SECTION | New credit cards avail | /", "set_flag": "exploredSavings"},
+                    {"id": "explored_savings", "event": "Text Hover", "element": "DIV | 6.5% p.a. | /", "set_flag": "viewedCalculator"}
+                ],
+                "pattern_id": "ec4fafbd-75ae-48b4-a564-8dcabbec0399",
+                "flow_components": {
+                    "bottomCard": {
+                        "link": "/smartassist/insights",
+                        "type": "bottomCard",
+                        "innerContent": "<b>You might want to check out our SavingsZero balance accounts with instant benefits.</b>",
+                        "imageUrl": "https://cdn.example.com/images/telemetry-modal.png"
+                    },
+                    "centredModal": {
+                        "link": "/smartassist/insights",
+                        "type": "centredModal",
+                        "innerContent": "Looks like you need to check out our <b>Credit Card</b> options. With more than <a href='/'>20 cards</a> available, we're sure we have something for you.",
+                        "imageUrl": "https://cdn.example.com/images/telemetry-modal.png"
+                    }
+                },
+                "flow_uiMappings": [
+                    {"flags": ["explored_savings"], "componentId": "centredModal"}
+                ],
+                "similarity_score": 0.074775256,
+                "bottomCardMessage": "Explore our SavingsZero balance accounts for instant benefits and easy savings!",
+                "centredModalMessage": "Unlock the potential of your savings with our SavingsZero balance accounts. Enjoy instant benefits, no minimum balance requirements, and a competitive interest rate of 6.5% p.a. Start maximizing your savings today and watch your money grow effortlessly!"
+            }            
         return ifConfig
 
     def _encode_event_vec(self, element):
@@ -67,6 +100,12 @@ class JourneyAnalyzer:
         return state
 
     def updateJourney(self, sessionId, state):
+        # randno = random.randint(0, 8)
+        # if randno%4 == 0:
+        #     return {
+        #         'updatedState': list(state),
+        #         'components': None
+        #     }
         events = self._get_latest_events(sessionId, count=self.N)
         ifConfig = self._get_latest_if_config(sessionId)
 
