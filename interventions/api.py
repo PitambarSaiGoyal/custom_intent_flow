@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Set
 
@@ -100,12 +101,12 @@ class JourneyAnalyzer:
             if flags_needed.issubset(current_state):
                 component_id = fum['componentId']
                 return {
-                    'updatedState': current_state,
+                    'updatedState': list(current_state),
                     'components': ifConfig['flow_components'][component_id]
                 }
 
         return {
-            'updatedState': current_state,
+            'updatedState': list(current_state),
             'components': None
         }
 
@@ -114,6 +115,15 @@ analyzer = JourneyAnalyzer(n=5, sim_threshold=0.6)
 
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 class RequestModel(BaseModel):
     sessionId: str
