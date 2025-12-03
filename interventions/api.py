@@ -100,12 +100,6 @@ class JourneyAnalyzer:
         return state
 
     def updateJourney(self, sessionId, state):
-        # randno = random.randint(0, 8)
-        # if randno%4 == 0:
-        #     return {
-        #         'updatedState': list(state),
-        #         'components': None
-        #     }
         events = self._get_latest_events(sessionId, count=self.N)
         ifConfig = self._get_latest_if_config(sessionId)
 

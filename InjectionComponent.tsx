@@ -2,16 +2,12 @@
 import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useDispatch, useSelector } from "react-redux"
-import type { ViewStateDispatch, ViewStateRootState } from "./store"
-import {
-  setFlagsTrue,
-  setFullIFConfig,
-  setInjectionVisibilityConfig,
-  type FullIFConfig,
-  type InjectionComponentContent,
-  type InjectionVisibilityConfig,
-} from "./viewStateSlice"
+
+export type InjectionComponentContent = {
+  content: string
+  imageUrl: string
+  link: string
+}
 
 export type InjectionComponentProps = {
   bottomCardContent?: InjectionComponentContent
@@ -21,45 +17,13 @@ export type InjectionComponentProps = {
 /**
  * Single line comment describing injection component behavior
  */
-const FALLBACK_BOTTOM_CARD: InjectionComponentContent = {
-  content: "Discover personalized offers tailored to your goals.",
-  imageUrl: "",
-  link: "/",
-}
 
-const TESTING = true;
 
-const FALLBACK_CENTERED_MODAL: InjectionComponentContent = {
-  content: "Smart banking, curated insights, unified journeys.",
-  imageUrl: "",
-  link: "/",
-}
-
-const InjectionComponent: React.FC<InjectionComponentProps> = ({
-  bottomCardContent,
-  centeredModalContent,
-}) => {
-  const viewState = useSelector((state: ViewStateRootState) => state.viewState)
-  const dispatch = useDispatch<ViewStateDispatch>()
-  const [pollingError, setPollingError] = useState<string | null>(null)
+const InjectionComponent: React.FC<InjectionComponentProps> = () => {
   const [bottomCardDismissed, setBottomCardDismissed] = useState(true)
   const [centeredModalDismissed, setCenteredModalDismissed] = useState(true)
   const [componentLink, setComponentLink] = useState('')
   const [innerContent, setInnerContent] = useState('')
-  const fullIFConfig = viewState.fullIFConfig
-
-  const resolvedBottomCardContent =
-    fullIFConfig?.componentProps?.bottomCard ??
-    bottomCardContent ??
-    viewState.componentProps.bottomCard ??
-    FALLBACK_BOTTOM_CARD
-
-  const resolvedCenteredModalContent =
-    fullIFConfig?.componentProps?.centeredModal ??
-    centeredModalContent ??
-    viewState.componentProps.centeredModal ??
-    FALLBACK_CENTERED_MODAL
-  
 
   const showBottomCard = !bottomCardDismissed;//shouldDisplayBottomCard && !bottomCardDismissed
   const showCentralModal = !centeredModalDismissed;//shouldDisplayCenteredModal && !centeredModalDismissed
@@ -73,159 +37,7 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
     }
   }, [])
 
-  useEffect(() => {
-    console.log("[InjectionComponent] fetching enriched config on mount")
 
-    const fetchLatestConfig = async () => {
-      try {
-        let response;
-        if(TESTING){
-          response = {
-              "title": "Savings Account Explorer",
-              "flow_steps": [
-                {
-                  "id": "explored_savings",
-                  "event": "click",
-                  "element": "SavingsZero balance accounts",
-                  "set_flag": "exploredSavings"
-                },
-                {
-                  "id": "viewed_calculator",
-                  "event": "Text Hover",
-                  "element": "DIV | 6.5% p.a. | /",
-                  "set_flag": "viewedCalculator"
-                }
-              ],
-              "pattern_id": "ec4fafbd-75ae-48b4-a564-8dcabbec0399",
-              "flow_components": {
-                "bottomCard": {
-                  "link": "/smartassist/insights",
-                  "type": "bottomCard",
-                  "message": "You might want to check out our SavingsZero balance accounts with instant benefits.",
-                  "imageUrl": "https://cdn.example.com/images/telemetry-modal.png"
-                }
-              },
-              "flow_uiMappings": [
-                {
-                  "flags": [
-                    "exploredSavings",
-                    "viewedCalculator"
-                  ],
-                  "componentId": "bottomCard"
-                }
-              ],
-              "similarity_score": 0.074775256,
-              "bottomCardMessage": "Explore our SavingsZero balance accounts for instant benefits and easy savings!",
-              "centredModalMessage": "Unlock the potential of your savings with our SavingsZero balance accounts. Enjoy instant benefits, no minimum balance requirements, and a competitive interest rate of 6.5% p.a. Start maximizing your savings today and watch your money grow effortlessly!"
-            }
-        }
-        else response = await fetch("/api/view-state/poll", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-
-        if (!response.ok) {
-          const body = await response.json().catch(() => ({}))
-          throw new Error(
-            `[InjectionComponent] GET current config failed with status ${response.status}: ${JSON.stringify(body)}`,
-          )
-        }
-
-        const data: FullIFConfig = TESTING ? response : await response.json()
-        console.log("[InjectionComponent] full IF config", data)
-        dispatch(setFullIFConfig(data))
-
-        const enrichedConfig = data
-
-        const groupedFlags: InjectionVisibilityConfig = {
-          bottomCard: [],
-          centeredModal: [],
-        }
-
-        const mappingEntries = Object.values(enrichedConfig.eventFlagMapping ?? {})
-        for (let i = 0; i < mappingEntries.length; i++) {
-          const entry = mappingEntries[i]
-          if (!entry?.flags || entry.flags.length === 0) {
-            continue
-          }
-
-          if (entry.componentContent === "bottomCard") {
-            groupedFlags.bottomCard!.push(...entry.flags)
-          } else if (entry.componentContent === "centeredModal") {
-            groupedFlags.centeredModal!.push(...entry.flags)
-          }
-        }
-
-        const normalizedConfig: InjectionVisibilityConfig = {
-          bottomCard: groupedFlags.bottomCard && groupedFlags.bottomCard.length > 0 ? groupedFlags.bottomCard : undefined,
-          centeredModal:
-            groupedFlags.centeredModal && groupedFlags.centeredModal.length > 0 ? groupedFlags.centeredModal : undefined,
-        }
-
-        const config =
-          normalizedConfig.bottomCard || normalizedConfig.centeredModal
-            ? normalizedConfig
-            : enrichedConfig.injectionConfig ?? {}
-
-        console.log("[InjectionComponent] applying injection config from enriched config", {
-          config,
-        })
-
-        dispatch(setInjectionVisibilityConfig(config))
-        setPollingError(null)
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
-        console.error("[InjectionComponent] GET current config failed", { error: message })
-        setPollingError(message)
-      }
-    }
-
-    void fetchLatestConfig()
-  }, [dispatch])
-
-  useEffect(() => {
-
-    const pollLatestEvent = async () => {
-      let response, randomNumber;
-      if(TESTING){
-        randomNumber = Math.floor(Math.random() * 100);
-        response = randomNumber % 4 === 0 ? {event: 'Text Hover', element: 'DIV | 6.5% p.a. | /'} : {event: 'Click', element: 'DIV | 6.5% p.a. | /'};
-      }
-      else response = await fetch("/api/view-state/latest-event", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      const eventResp: { urlPath: string; eventName: string } = TESTING ? response:await response.json()
-
-      const flagsToSet: string[] = []
-      const steps = fullIFConfig?.flowSteps ?? []
-      for (let i = 0; i < steps.length; i++) {
-        const step = steps[i]
-        if (step.parentUIComp === eventResp.urlPath && step.action === eventResp.eventName) {
-          const stepFlags = step.flag ?? step.flags ?? []
-          flagsToSet.push(...stepFlags)
-        }
-      }
-
-      if (flagsToSet.length > 0) {
-        dispatch(setFlagsTrue(flagsToSet))
-      }
-    }
-
-    const intervalId = setInterval(() => {
-      void pollLatestEvent()
-    }, 5000)
-
-    void pollLatestEvent()
-
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, [dispatch, fullIFConfig])
 
   useEffect(() => {
     const updateState = async () => {
@@ -289,11 +101,6 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
 
   return (
     <>
-      {pollingError ? (
-        <div className="fixed top-4 right-4 z-50 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700 shadow-md">
-          {pollingError}
-        </div>
-      ) : null}
       {showBottomCard ? (
         <BottomCardInnerHTML
           innerContent={ innerContent ? innerContent : '<b>TESTING!!!!</b>'}
