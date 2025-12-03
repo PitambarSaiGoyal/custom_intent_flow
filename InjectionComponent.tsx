@@ -276,7 +276,7 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
 
     const intervalId = setInterval(() => {
       void updateState()
-    }, 5000)
+    }, 10000)
 
     void updateState()
 
@@ -293,12 +293,6 @@ const InjectionComponent: React.FC<InjectionComponentProps> = ({
         <div className="fixed top-4 right-4 z-50 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700 shadow-md">
           {pollingError}
         </div>
-      ) : null}
-      {!showBottomCard ? (
-        <BottomCard
-          contentProps={resolvedBottomCardContent}
-          onClose={() => setBottomCardDismissed(true)}
-        />
       ) : null}
       {showBottomCard ? (
         <BottomCardInnerHTML
